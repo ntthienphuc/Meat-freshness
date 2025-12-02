@@ -69,8 +69,9 @@ const Scanner: React.FC = () => {
 
   const handleToggleProMode = () => {
     const isPremium = localStorage.getItem('isPremium') === 'true';
-    if (!isPremium && !isProMode) {
-        // Direct navigation to premium page if user is not premium
+    
+    // If trying to turn ON Pro Mode but not premium
+    if (!isProMode && !isPremium) {
         navigate('/premium');
         return;
     }
@@ -377,25 +378,40 @@ const Scanner: React.FC = () => {
             <p className="text-slate-500 text-sm font-medium">Chụp ảnh để AI phân tích độ tươi</p>
          </div>
          <div className="flex items-center gap-2">
-             {/* Prominent PRO Mode Toggle Button */}
-             <button 
+             {/* PRO Mode Toggle Button */}
+             <button
                 onClick={handleToggleProMode}
-                className={`relative flex items-center gap-3 pl-1 pr-4 py-1 rounded-full border transition-all duration-300 shadow-sm group ${isProMode ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-200 hover:border-rose-200'}`}
-             >
-                 {/* Icon Box */}
-                 <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm ${isProMode ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white rotate-0' : 'bg-slate-100 text-slate-400 group-hover:bg-rose-50 group-hover:text-rose-400'}`}>
-                    <Crown className={`w-4 h-4 ${isProMode ? 'fill-current' : ''}`} />
-                 </div>
-                 
-                 <div className="flex flex-col items-start">
-                     <span className={`text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 ${isProMode ? 'text-amber-600' : 'text-slate-400'}`}>
-                        {isProMode ? 'AI Pro' : 'Cơ bản'}
-                     </span>
-                     <span className={`text-xs font-bold leading-none ${isProMode ? 'text-amber-900' : 'text-slate-600'}`}>
-                        {isProMode ? 'Đang bật' : 'Bật Pro'}
-                     </span>
-                 </div>
-             </button>
+                className={`
+                    relative group overflow-hidden rounded-full p-1 pl-4 pr-1 transition-all duration-300 border
+                    ${isProMode 
+                    ? 'bg-slate-900 border-slate-800 text-white shadow-lg shadow-amber-200' 
+                    : 'bg-white border-slate-200 text-slate-500 hover:border-rose-200 shadow-sm'}
+                `}
+            >
+                <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-start mr-1">
+                        <span className={`text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 ${isProMode ? 'opacity-80' : 'text-slate-400'}`}>
+                            {isProMode ? 'PRO AI' : 'Basic AI'}
+                        </span>
+                        <span className={`text-xs font-bold leading-none ${isProMode ? 'text-amber-400' : 'text-slate-700'}`}>
+                            {isProMode ? 'Đang bật' : 'Bật chế độ Pro'}
+                        </span>
+                    </div>
+                    
+                    {/* Switch Circle */}
+                    <div className={`
+                        w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 transform
+                        ${isProMode 
+                        ? 'bg-gradient-to-br from-amber-300 to-yellow-500 rotate-0 scale-110' 
+                        : 'bg-slate-100 group-hover:bg-rose-50'}
+                    `}>
+                        <Crown className={`w-4 h-4 transition-colors ${isProMode ? 'text-amber-900 fill-amber-900' : 'text-slate-400 group-hover:text-rose-500'}`} />
+                    </div>
+                </div>
+                
+                {/* Glow effect for Pro */}
+                {isProMode && <div className="absolute inset-0 bg-amber-400/10 blur-md rounded-full pointer-events-none"></div>}
+            </button>
 
              {!image && (
                  <div className="p-2.5 bg-rose-100 rounded-full shadow-sm">
@@ -428,8 +444,8 @@ const Scanner: React.FC = () => {
                     
                     {/* Pro Mode Indicator inside camera area */}
                     {isProMode && (
-                        <div className="absolute bottom-6 flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
-                            <Sparkles className="w-3 h-3" />
+                        <div className="absolute bottom-6 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-amber-400 text-xs font-bold border border-slate-700 shadow-lg">
+                            <Sparkles className="w-3 h-3 fill-amber-400" />
                             Đang dùng mô hình cao cấp
                         </div>
                     )}
@@ -497,7 +513,7 @@ const Scanner: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Loại thịt phát hiện</span>
-                                {isProMode && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[9px] font-bold border border-amber-200">PRO AI</span>}
+                                {isProMode && <span className="px-1.5 py-0.5 rounded bg-slate-800 text-amber-400 text-[9px] font-bold border border-slate-600 flex items-center gap-1"><Sparkles className="w-2 h-2" /> PRO AI</span>}
                             </div>
                             <div>
                                 <h3 className={`text-2xl font-black ${isDevMeatType ? 'text-slate-800' : theme.text} leading-none mb-2`}>
