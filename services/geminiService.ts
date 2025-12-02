@@ -39,12 +39,17 @@ const responseSchema: Schema = {
   required: ["meatType", "freshnessScore", "freshnessLevel", "safetyStatus", "visualCues", "summary"],
 };
 
-export const analyzeMeatImage = async (base64Image: string): Promise<AnalysisResult> => {
+export const analyzeMeatImage = async (base64Image: string, useProModel: boolean = false): Promise<AnalysisResult> => {
   try {
     const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, "");
 
+    // Select model based on Pro mode
+    // Basic: gemini-2.5-flash
+    // Advanced/Premium: gemini-3-pro-preview
+    const modelName = useProModel ? "gemini-3-pro-preview" : "gemini-2.5-flash";
+
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: modelName,
       contents: {
         parts: [
           {
@@ -78,7 +83,7 @@ export const analyzeMeatImage = async (base64Image: string): Promise<AnalysisRes
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
-        temperature: 0.3,
+        temperature: useProModel ? 0.2 : 0.4, // Pro model implies more precision
       },
     });
 
@@ -105,8 +110,10 @@ export const analyzeMeatImage = async (base64Image: string): Promise<AnalysisRes
   }
 };
 
-export const refineAnalysis = async (initialResult: AnalysisResult, sensoryData: SensoryData): Promise<AnalysisResult> => {
+export const refineAnalysis = async (initialResult: AnalysisResult, sensoryData: SensoryData, useProModel: boolean = false): Promise<AnalysisResult> => {
   try {
+    const modelName = useProModel ? "gemini-3-pro-preview" : "gemini-2.5-flash";
+
     const prompt = `
       Bạn là chuyên gia An toàn Thực phẩm.
       
@@ -133,14 +140,14 @@ export const refineAnalysis = async (initialResult: AnalysisResult, sensoryData:
     `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: modelName,
       contents: {
         parts: [{ text: prompt }]
       },
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
-        temperature: 0.3,
+        temperature: useProModel ? 0.2 : 0.4,
       },
     });
 

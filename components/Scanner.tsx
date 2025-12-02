@@ -1,18 +1,26 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, CheckCircle, AlertTriangle, XCircle, AlertOctagon, ChevronRight, BookOpen, Microscope, UploadCloud, ScanLine, Palette, Zap, Brain, TestTube, Fingerprint, Wind, Droplets, ArrowDown, Sun, Focus, Aperture, Lightbulb, ShieldCheck, Scan, Construction, SlidersHorizontal } from 'lucide-react';
+import { Camera, CheckCircle, AlertTriangle, XCircle, AlertOctagon, ChevronRight, BookOpen, Microscope, UploadCloud, ScanLine, Palette, Zap, Brain, TestTube, Fingerprint, Wind, Droplets, ArrowDown, Sun, Focus, Aperture, Lightbulb, ShieldCheck, Scan, Construction, SlidersHorizontal, Crown, Sparkles } from 'lucide-react';
 import { analyzeMeatImage, refineAnalysis } from '../services/geminiService';
 import { AnalysisResult, SafetyStatus, HistoryItem, MeatType, SensoryData, StorageEnvironment, ContainerType } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Scanner: React.FC = () => {
+  const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [showSensoryForm, setShowSensoryForm] = useState(false);
+  
+  // Initialize Pro Mode based on LocalStorage AND Premium Status
+  const [isProMode, setIsProMode] = useState(() => {
+      const savedMode = localStorage.getItem('scanProMode');
+      const isPremium = localStorage.getItem('isPremium') === 'true';
+      return isPremium && savedMode === 'true';
+  });
   
   // Track the ID of the current scan session to update history instead of creating duplicates
   const [currentScanId, setCurrentScanId] = useState<string | null>(null);
@@ -32,7 +40,7 @@ const Scanner: React.FC = () => {
   // Dynamic Scan Stages
   const getScanStage = (prog: number) => {
     if (prog < 30) return { text: "Khởi động Vision AI...", icon: <ScanLine className="w-6 h-6 text-rose-500 animate-pulse" /> };
-    if (prog < 60) return { text: "Phân tích sắc tố & Myoglobin...", icon: <Palette className="w-6 h-6 text-blue-500 animate-pulse" /> };
+    if (prog < 60) return { text: `Phân tích ${isProMode ? '(Deep Learning)...' : 'sắc tố...'}`, icon: <Palette className="w-6 h-6 text-blue-500 animate-pulse" /> };
     if (prog < 85) return { text: "Kiểm tra cấu trúc vi sinh...", icon: <Microscope className="w-6 h-6 text-emerald-500 animate-pulse" /> };
     if (prog < 100) return { text: "Tổng hợp kết quả...", icon: <Brain className="w-6 h-6 text-purple-500 animate-pulse" /> };
     return { text: "Hoàn tất!", icon: <CheckCircle className="w-6 h-6 text-rose-600" /> };
@@ -58,6 +66,19 @@ const Scanner: React.FC = () => {
           }, 100);
       }
   }, [showSensoryForm]);
+
+  const handleToggleProMode = () => {
+    const isPremium = localStorage.getItem('isPremium') === 'true';
+    if (!isPremium && !isProMode) {
+        // Direct navigation to premium page if user is not premium
+        navigate('/premium');
+        return;
+    }
+    
+    const newMode = !isProMode;
+    setIsProMode(newMode);
+    localStorage.setItem('scanProMode', String(newMode));
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -140,7 +161,8 @@ const Scanner: React.FC = () => {
     
     try {
         const minTimePromise = new Promise(resolve => setTimeout(resolve, 2500));
-        const analysisPromise = analyzeMeatImage(base64);
+        // Pass isProMode flag to the service
+        const analysisPromise = analyzeMeatImage(base64, isProMode);
         
         const [_, data] = await Promise.all([minTimePromise, analysisPromise]);
         
@@ -226,7 +248,8 @@ const Scanner: React.FC = () => {
       setIsRefining(true);
       
       try {
-        const refinedResult = await refineAnalysis(result, sensoryData);
+        // Pass isProMode flag
+        const refinedResult = await refineAnalysis(result, sensoryData, isProMode);
         setResult(refinedResult);
         setShowSensoryForm(false);
         
@@ -353,11 +376,33 @@ const Scanner: React.FC = () => {
             <h2 className="text-2xl font-black text-slate-800 tracking-tight font-serif">Kiểm tra thịt</h2>
             <p className="text-slate-500 text-sm font-medium">Chụp ảnh để AI phân tích độ tươi</p>
          </div>
-         {!image && (
-             <div className="p-2.5 bg-rose-100 rounded-full shadow-sm">
-                 <Camera className="w-6 h-6 text-rose-500" />
-             </div>
-         )}
+         <div className="flex items-center gap-2">
+             {/* Prominent PRO Mode Toggle Button */}
+             <button 
+                onClick={handleToggleProMode}
+                className={`relative flex items-center gap-3 pl-1 pr-4 py-1 rounded-full border transition-all duration-300 shadow-sm group ${isProMode ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-200 hover:border-rose-200'}`}
+             >
+                 {/* Icon Box */}
+                 <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm ${isProMode ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white rotate-0' : 'bg-slate-100 text-slate-400 group-hover:bg-rose-50 group-hover:text-rose-400'}`}>
+                    <Crown className={`w-4 h-4 ${isProMode ? 'fill-current' : ''}`} />
+                 </div>
+                 
+                 <div className="flex flex-col items-start">
+                     <span className={`text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 ${isProMode ? 'text-amber-600' : 'text-slate-400'}`}>
+                        {isProMode ? 'AI Pro' : 'Cơ bản'}
+                     </span>
+                     <span className={`text-xs font-bold leading-none ${isProMode ? 'text-amber-900' : 'text-slate-600'}`}>
+                        {isProMode ? 'Đang bật' : 'Bật Pro'}
+                     </span>
+                 </div>
+             </button>
+
+             {!image && (
+                 <div className="p-2.5 bg-rose-100 rounded-full shadow-sm">
+                     <Camera className="w-6 h-6 text-rose-500" />
+                 </div>
+             )}
+         </div>
       </div>
 
       {/* Main Content Grid */}
@@ -380,6 +425,14 @@ const Scanner: React.FC = () => {
                     </div>
                     <h3 className="font-bold text-slate-700 text-lg relative z-10">Nhấn để chụp ảnh</h3>
                     <p className="text-slate-400 text-sm mt-1 font-medium relative z-10">Hỗ trợ JPG, PNG</p>
+                    
+                    {/* Pro Mode Indicator inside camera area */}
+                    {isProMode && (
+                        <div className="absolute bottom-6 flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
+                            <Sparkles className="w-3 h-3" />
+                            Đang dùng mô hình cao cấp
+                        </div>
+                    )}
                 </div>
                 ) : (
                 <div className="w-full h-full relative bg-black">
@@ -444,6 +497,7 @@ const Scanner: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Loại thịt phát hiện</span>
+                                {isProMode && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[9px] font-bold border border-amber-200">PRO AI</span>}
                             </div>
                             <div>
                                 <h3 className={`text-2xl font-black ${isDevMeatType ? 'text-slate-800' : theme.text} leading-none mb-2`}>

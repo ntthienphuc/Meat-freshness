@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Check, Crown, Sparkles, X, Zap, ShieldCheck, Smartphone } from 'lucide-react';
+import { Check, Crown, Sparkles, X, Zap, ShieldCheck, Smartphone, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Premium: React.FC = () => {
@@ -16,7 +17,7 @@ const Premium: React.FC = () => {
         window.dispatchEvent(new Event('storage'));
         
         alert(`Chúc mừng! Bạn đã đăng ký gói ${plan} thành công.`);
-        navigate('/assistant');
+        navigate(-1); // Go back to the previous page (Scanner or others)
     }, 500);
   };
 
@@ -75,7 +76,13 @@ const Premium: React.FC = () => {
                         <Check className="w-5 h-5 text-emerald-400" /> Truy cập Trợ lý AI (3 Personas)
                     </li>
                     <li className="flex items-center gap-3 text-slate-300 text-sm">
-                        <Check className="w-5 h-5 text-emerald-400" /> Không giới hạn lượt Scan thịt
+                        <Check className="w-5 h-5 text-emerald-400" /> <strong>Scan thịt với AI thế hệ mới (Độ chính xác cao)</strong>
+                    </li>
+                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                        <Check className="w-5 h-5 text-emerald-400" /> Sử dụng AI Gemini 3 Pro
+                    </li>
+                    <li className="flex items-center gap-3 text-slate-300 text-sm">
+                        <Check className="w-5 h-5 text-emerald-400" /> Không giới hạn lượt Scan
                     </li>
                     <li className="flex items-center gap-3 text-slate-300 text-sm">
                         <Check className="w-5 h-5 text-emerald-400" /> Loại bỏ quảng cáo
@@ -112,6 +119,10 @@ const Premium: React.FC = () => {
                     <li className="flex items-center gap-3 text-white text-sm font-medium">
                         <div className="p-1 bg-amber-500 rounded-full"><Check className="w-3 h-3 text-amber-900 stroke-[3]" /></div>
                         Tất cả quyền lợi gói tháng
+                    </li>
+                    <li className="flex items-center gap-3 text-white text-sm font-medium">
+                        <div className="p-1 bg-amber-500 rounded-full"><Brain className="w-3 h-3 text-amber-900 stroke-[3]" /></div>
+                        <strong>Model Scan Thịt Chuyên Sâu (Deep Learning)</strong>
                     </li>
                     <li className="flex items-center gap-3 text-white text-sm font-medium">
                         <div className="p-1 bg-amber-500 rounded-full"><Check className="w-3 h-3 text-amber-900 stroke-[3]" /></div>
